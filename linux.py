@@ -3,6 +3,7 @@ import os
 from shutil import copy2
 import subprocess
 import random
+import time
 port = random.random() * 10000
 port = int(port)
 p = 0
@@ -15,15 +16,19 @@ def host(f):
             global port
             os.mkdir(os.getcwd() + '/host'+str(count))
             copy2(os.getcwd() +"/" + f.name, os.getcwd() + '/host'+str(count))
-            print("\n")
-            p = subprocess.Popen(["python3","-m","http.server",str(port)], cwd=os.getcwd() +"/host"+str(count)+ "/").pid
-
-            port = int(random.random() * 10000)
+            print(count)
             count += 1
+            p = subprocess.call(["sudo","python3","-m","http.server",str(port)], cwd=os.getcwd() +"/host"+str(count-1)+ "/",stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            
+            print(count)
+            port = int(random.random() * 100000)
+            time.sleep(0.9)
+            print("File Name( Case SensEtive ): ")
+            
+            
             f.close()
-    except FileNotFoundError as err:
-        print("File not found")
-
+    except FileNotFoundError or PermissionError as err:
+        print("File not found or permission error")
 while True:
     try:
         
@@ -32,8 +37,9 @@ while True:
         th = threading.Thread(target=host,args=(filename,))
         th.start()
         print("server on http://localhost:" +str(port))
+        
         continue
-    except KeyboardInterrupt or TypeError as e:
+    except KeyboardInterrupt or TypeError or PermissionError as e:
         os.system("sudo pkill "+str(p))
         for i in range(1,count):
             
